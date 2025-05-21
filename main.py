@@ -1,5 +1,6 @@
 import sys
 import os
+
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog,
     QSpacerItem, QSizePolicy, QHBoxLayout
@@ -7,7 +8,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QTimer
 from result import ResultWindow
-
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -18,8 +18,9 @@ class MainWindow(QWidget):
         self.selected_file_path = None
         self.selected_folder_path = None
         self.image_files = []
-        self.current_image_index = 0
+        self.current_image_index = 0 
 
+        # 스타일시트
         self.setStyleSheet("""
             QWidget {
                 background-color: #FFF;
@@ -71,11 +72,19 @@ class MainWindow(QWidget):
                 background-color: #FFFFFF;
                 text-align: center;
             }
+            #main_layout {
+                padding: 30px;
+            }
+            #spacer {
+                height: 40px;
+            }
         """)
 
         layout = QVBoxLayout()
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
+
+        layout.setObjectName("main_layout")
 
         title_label = QLabel("🔍 불량품 검출")
         title_label.setObjectName("title_label")
@@ -84,6 +93,7 @@ class MainWindow(QWidget):
         self.file_label = QLabel("선택된 경로 없음")
         self.file_label.setObjectName("file_label")
 
+        # 이미지 미리보기 + 좌우 버튼
         preview_layout = QHBoxLayout()
         self.left_button = QPushButton("<")
         self.left_button.setFixedWidth(40)
@@ -139,7 +149,8 @@ class MainWindow(QWidget):
             pixmap = QPixmap(file_path).scaled(400, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.image_preview.setPixmap(pixmap)
             self.detect_button.setEnabled(True)
-            self.image_files = []
+
+            self.image_files = []  # 폴더 선택 기록 초기화
 
     def load_image_folder(self):
         folder_path = QFileDialog.getExistingDirectory(self, "이미지 폴더 선택", "")
@@ -154,6 +165,7 @@ class MainWindow(QWidget):
                 for f in os.listdir(folder_path)
                 if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
             ])
+  
             if not self.image_files:
                 self.file_label.setText("⚠️ 폴더에 이미지 파일이 없습니다.")
                 self.detect_button.setEnabled(False)
@@ -166,6 +178,7 @@ class MainWindow(QWidget):
         if self.image_files:
             path = self.image_files[self.current_image_index]
             pixmap = QPixmap(path).scaled(400, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
             self.image_preview.setPixmap(pixmap)
 
     def show_previous_image(self):
@@ -179,6 +192,7 @@ class MainWindow(QWidget):
             self.update_image_preview()
 
     def start_detection(self):
+
         if self.selected_file_path:
             self.file_label.setText("🔄 검증 중입니다...")
             self.repaint()
@@ -197,7 +211,7 @@ class MainWindow(QWidget):
         self.file_label.setText(f"📂 폴더 검출 완료: {self.selected_folder_path}")
         self.result_window = ResultWindow(self.image_files)
         self.result_window.show()
-
+        
     def reset_ui(self):
         self.selected_file_path = None
         self.selected_folder_path = None
@@ -206,7 +220,6 @@ class MainWindow(QWidget):
         self.file_label.setText("선택된 경로 없음")
         self.image_preview.clear()
         self.detect_button.setEnabled(False)
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
