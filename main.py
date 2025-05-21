@@ -13,7 +13,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("배터리캡 불량품 검출 프로그램")
-        self.setGeometry(300, 200, 600, 500)
+        # self.setGeometry(300, 200, 600, 500)
 
         self.selected_file_path = None
         self.selected_folder_path = None
@@ -224,6 +224,6 @@ class MainWindow(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = MainWindow()
-    win.show()
+    win.showFullScreen()
     sys.exit(app.exec_())
 
