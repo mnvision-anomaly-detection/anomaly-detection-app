@@ -1,12 +1,13 @@
 import sys
 import os
-import time
+
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QSpacerItem, QSizePolicy, QHBoxLayout
+    QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog,
+    QSpacerItem, QSizePolicy, QHBoxLayout
 )
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QTimer
-from result import ResultWindow 
+from result import ResultWindow
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -82,6 +83,7 @@ class MainWindow(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
+
         layout.setObjectName("main_layout")
 
         title_label = QLabel("🔍 불량품 검출")
@@ -100,8 +102,7 @@ class MainWindow(QWidget):
 
         self.image_preview = QLabel()
         self.image_preview.setObjectName("image_preview")
-        self.image_preview.setFixedHeight(250)
-        self.image_preview.setFixedWidth(460)
+        self.image_preview.setFixedSize(460, 250)
         self.image_preview.setAlignment(Qt.AlignCenter)
         preview_layout.addWidget(self.image_preview)
 
@@ -148,6 +149,7 @@ class MainWindow(QWidget):
             pixmap = QPixmap(file_path).scaled(400, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.image_preview.setPixmap(pixmap)
             self.detect_button.setEnabled(True)
+
             self.image_files = []  # 폴더 선택 기록 초기화
 
     def load_image_folder(self):
@@ -158,12 +160,12 @@ class MainWindow(QWidget):
             self.image_preview.clear()
             self.detect_button.setEnabled(True)
 
-            self.image_files = [
+            self.image_files = sorted([
                 os.path.join(folder_path, f)
                 for f in os.listdir(folder_path)
                 if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
-            ]
-            self.image_files.sort()
+            ])
+  
             if not self.image_files:
                 self.file_label.setText("⚠️ 폴더에 이미지 파일이 없습니다.")
                 self.detect_button.setEnabled(False)
@@ -174,8 +176,9 @@ class MainWindow(QWidget):
 
     def update_image_preview(self):
         if self.image_files:
-            current_path = self.image_files[self.current_image_index]
-            pixmap = QPixmap(current_path).scaled(400, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            path = self.image_files[self.current_image_index]
+            pixmap = QPixmap(path).scaled(400, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
             self.image_preview.setPixmap(pixmap)
 
     def show_previous_image(self):
@@ -189,35 +192,26 @@ class MainWindow(QWidget):
             self.update_image_preview()
 
     def start_detection(self):
-        if not self.selected_file_path and not self.selected_folder_path:
-            self.file_label.setText("⚠️ 먼저 이미지를 선택하세요.")
-            return
-
-        self.file_label.setText("🔄 검증 중입니다... 잠시만 기다려주세요.")
-        self.repaint()
-        self.start_time = time.time()
 
         if self.selected_file_path:
-            QTimer.singleShot(1000, self.finish_validation)
+            self.file_label.setText("🔄 검증 중입니다...")
+            self.repaint()
+            QTimer.singleShot(1000, self.show_single_result)
         elif self.selected_folder_path:
-            self.detect_multiple_images()
+            self.file_label.setText("🔄 폴더 검증 중입니다...")
+            self.repaint()
+            QTimer.singleShot(1000, self.show_folder_result)
 
-    def finish_validation(self):
-        end_time = time.time()
-        duration = round(end_time - self.start_time, 2)
-        result_text = f"불량품이 감지되었습니다\n(검증 시간: {duration}초)"
-        self.file_label.setText(f"✅ 선택된 파일: {self.selected_file_path}\n검증 완료 (소요 시간: {duration}초)")
-        self.result_window = ResultWindow(self.selected_file_path, result_text)
+    def show_single_result(self):
+        self.file_label.setText(f"✅ 검출 완료: {self.selected_file_path}")
+        self.result_window = ResultWindow(self.selected_file_path)
         self.result_window.show()
 
-    def detect_multiple_images(self):
-        for image_path in self.image_files:
-            result_text = f"{os.path.basename(image_path)}: 불량품 감지됨"
-            self.result_window = ResultWindow(image_path, result_text)
-            self.result_window.show()
-
-        self.file_label.setText(f"📂 선택된 폴더: {self.selected_folder_path}\n검출 완료")
-
+    def show_folder_result(self):
+        self.file_label.setText(f"📂 폴더 검출 완료: {self.selected_folder_path}")
+        self.result_window = ResultWindow(self.image_files)
+        self.result_window.show()
+        
     def reset_ui(self):
         self.selected_file_path = None
         self.selected_folder_path = None
@@ -229,6 +223,7 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    main_win = MainWindow()
-    main_win.show()
+    win = MainWindow()
+    win.show()
     sys.exit(app.exec_())
+
