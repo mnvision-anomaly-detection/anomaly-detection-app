@@ -14,8 +14,5 @@ def crop_largest_rectangle(img: Image.Image) -> Image.Image:
 
 def process_single_image(img: Image.Image, target_size=(128, 128)) -> np.ndarray:
     img = crop_largest_rectangle(img.convert('RGB'))
-    angle = random.uniform(-10, 10)
-    img = img.rotate(angle,Image.BICUBIC, expand=True)
-    img = crop_largest_rectangle(img)
     img = img.resize(target_size, Image.BICUBIC)
     return np.array(img) / 255.0

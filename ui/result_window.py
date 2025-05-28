@@ -66,7 +66,7 @@ class ResultWindow(QWidget):
             img_lbl.setPixmap(QPixmap(path).scaled(300, 300, Qt.KeepAspectRatio))
             img_lbl.setAlignment(Qt.AlignCenter)
 
-            info = [f"score:{d['anomaly_score']:.3f}, anomaly:{d['is_anomaly']}" for d in dets]
+            info = [f"score:{d['anomaly_score']:.6f}, anomaly:{d['is_anomaly']}" for d in dets]
             text = "".join(info) if info else "이상 없음"
             txt_lbl = QLabel(text)
             txt_lbl.setAlignment(Qt.AlignCenter)

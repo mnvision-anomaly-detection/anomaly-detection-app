@@ -124,6 +124,11 @@ class MainWindow(QWidget):
     # 검출 실행
     def start_detection(self):
         results = self.detector.detect_batch(self.image_files)
+        anomaly_count = sum(
+            result[0]['is_anomaly'] if isinstance(result, list) else result['is_anomaly']
+            for result in results
+        )
+        print(f"⚠️ 이상치로 검출된 이미지 수: {anomaly_count} / {len(results)}")
         self.result_window = ResultWindow(self.image_files, results)
         self.result_window.show()
 
